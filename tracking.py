@@ -10,9 +10,8 @@ class Tracking(object):
         self.max_iterations = params.pnp_max_iterations
 
     def refine_pose(self, pose, cam, measurements):
-        assert len(measurements) >= self.min_measurements, (
-            'Not enough points')
-
+        if len(measurements) < self.min_measurements: 
+            return pose 
         pose_pnp = self.pnp(cam, pose, measurements)
         return pose_pnp
 
@@ -47,7 +46,7 @@ class Tracking(object):
         
         if not success: 
             return pose
-            
+
         angle = np.linalg.norm(rotation_vector)
         dirc = rotation_vector / angle 
         q = tf.quaternions.axangle2quat(dirc, angle)

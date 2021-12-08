@@ -207,7 +207,8 @@ if __name__ == '__main__':
 
 
     durations = []
-    for i in range(len(dataset))[:100]:
+    # for i in range(len(dataset))[:100]:
+    for i in range(len(dataset)):
         featurel = ImageFeature(dataset.left[i], params)
         featurer = ImageFeature(dataset.right[i], params)
         timestamp = dataset.timestamps[i]
