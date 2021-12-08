@@ -1,15 +1,16 @@
 import numpy as np 
+import transforms3d as tf
 
 class Isometry3d(object):
     """
     3d rigid transform.
     """
-    def __init__(self, R, t):
-        self.R = R
+    def __init__(self, q, t):
+        self.R = tf.quat2mat(q)
         self.t = t
 
     def orientation(self): 
-        return self.R 
+        return tf.mat2quat(self.R)
 
     def position(self): 
         return self.t 
