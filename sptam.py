@@ -45,9 +45,6 @@ class SPTAM(object):
 
         self.graph = CovisibilityGraph()
         self.mapping = MappingThread(self.graph, params)
-
-        self.loop_closing = LoopClosing(self, params)
-        self.loop_correction = None
         
         self.reference = None        # reference keyframe
         self.preceding = None        # last keyframe
@@ -56,8 +53,6 @@ class SPTAM(object):
         
     def stop(self):
         self.mapping.stop()
-        if self.loop_closing is not None:
-            self.loop_closing.stop()
 
     def initialize(self, frame):
         mappoints, measurements = frame.triangulate()
@@ -68,8 +63,6 @@ class SPTAM(object):
         keyframe.set_fixed(True)
         self.graph.add_keyframe(keyframe)
         self.mapping.add_measurements(keyframe, mappoints, measurements)
-        if self.loop_closing is not None:
-            self.loop_closing.add_keyframe(keyframe)
 
         self.reference = keyframe
         self.preceding = keyframe
@@ -89,16 +82,6 @@ class SPTAM(object):
 
         predicted_pose, _ = self.motion_model.predict_pose(frame.timestamp)
         frame.update_pose(predicted_pose)
-
-        if self.loop_closing is not None:
-            if self.loop_correction is not None:
-                estimated_pose = g2o.Isometry3d(
-                    frame.orientation,
-                    frame.position)
-                estimated_pose = estimated_pose * self.loop_correction
-                frame.update_pose(estimated_pose)
-                self.motion_model.apply_correction(self.loop_correction)
-                self.loop_correction = None
 
         local_mappoints = self.filter_points(frame)
         measurements = frame.match_mappoints(
@@ -132,8 +115,6 @@ class SPTAM(object):
             keyframe.update_preceding(self.preceding)
 
             self.mapping.add_keyframe(keyframe, measurements)
-            if self.loop_closing is not None:
-                self.loop_closing.add_keyframe(keyframe)
             self.preceding = keyframe
 
         self.set_tracking(False)
@@ -179,10 +160,6 @@ class SPTAM(object):
 
         return ((n_matches / n_matches_ref) < 
             self.params.min_tracked_points_ratio) or n_matches < 20
-
-
-    def set_loop_correction(self, T):
-        self.loop_correction = T
 
     def is_initialized(self):
         return self.status['initialized']
