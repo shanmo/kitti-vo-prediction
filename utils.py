@@ -8,7 +8,7 @@ class Isometry3d(object):
     """
     def __init__(self, q, t):
         self.R = tf.quaternions.quat2mat(q)
-        self.t = t
+        self.t = np.squeeze(t)
 
     def orientation(self): 
         return tf.quaternions.mat2quat(self.R)
@@ -25,6 +25,11 @@ class Isometry3d(object):
     def inverse(self):
         return Isometry3d(tf.quaternions.mat2quat(self.R.T), -self.R.T @ self.t)
 
-    def __mul__(self, t):
-        t = self.R @ t + self.t 
-        return t
+    def mul_trans(self, t_in):
+        t_out = self.R @ np.squeeze(t_in) + self.t 
+        return t_out
+
+    def __mul__(self, T1):
+        R = self.R @ T1.R
+        t = self.R @ T1.t + self.t
+        return Isometry3d(tf.quaternions.mat2quat(R), t)

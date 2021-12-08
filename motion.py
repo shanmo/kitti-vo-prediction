@@ -59,12 +59,11 @@ class MotionModel(object):
             v_linear = (new_position - self.position) / dt
             self.v_linear = v_linear
 
-            delta_q = self.orientation.inverse() * new_orientation
-            delta_q.normalize()
+            delta_q = tf.quaternions.qinverse(self.orientation) * new_orientation
 
-            delta_angle = tf.quat2axangle(delta_q)
-            angle = delta_angle.angle()
-            axis = delta_angle.axis()
+            vec, theta = tf.quaternions.quat2axangle(delta_q)
+            angle = theta
+            axis = vec
 
             if angle > np.pi:
                 axis = axis * -1

@@ -6,14 +6,15 @@
 
 - `conda install -c anaconda pyopengl`
 - `conda install pybind11` 
-- [pangolin](https://github.com/uoip/pangolin)
+- [pangolin](https://github.com/uoip/pangolin), need to use [this setup.py](https://github.com/shanmo/kitti-vo-prediction/issues/1)
 
 ## demo 
 
-- folder structure in `KITTI odometry 00` should be 
+- folder structure in `KITTI odometry 06` should be 
 ```
 calib.txt  image_0  image_1  image_2  image_3  times.txt
 ```
+- run `python sptam.py` 
 
 ## references 
 

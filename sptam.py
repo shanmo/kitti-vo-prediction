@@ -69,17 +69,11 @@ class SPTAM(object):
             mappoint.increase_measurement_count()
             tracked_map.add(mappoint)
         
-        try:
-            self.reference = self.graph.get_reference_frame(tracked_map)
+        self.reference = self.graph.get_reference_frame(tracked_map)
+        self.motion_model.update_pose(
+            frame.timestamp, frame.pose.position(), frame.pose.orientation())
 
-            self.motion_model.update_pose(
-                frame.timestamp, frame.pose.position(), frame.pose.orientation())
-            tracking_is_ok = True
-        except:
-            tracking_is_ok = False
-            print('tracking failed!!!')
-
-        if tracking_is_ok and self.should_be_keyframe(frame, measurements):
+        if self.should_be_keyframe(frame, measurements):
             print('new keyframe', frame.idx)
             keyframe = frame.to_keyframe()
             keyframe.update_reference(self.reference)
@@ -185,7 +179,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, help='dataset (KITTI/EuRoC)', 
         default='KITTI')
     parser.add_argument('--path', type=str, help='dataset path', 
-        default='/mnt/disk2/kitti/Kitti_all_data/odometry/dataset/sequences/00')
+        default='/mnt/disk2/kitti/Kitti_all_data/odometry/dataset/sequences/06')
     args = parser.parse_args()
 
     if args.dataset.lower() == 'kitti':

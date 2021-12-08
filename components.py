@@ -35,7 +35,7 @@ class Camera(object):
         self.height = height
         
     def compute_right_camera_pose(self, pose):
-        pos = pose * np.array([self.baseline, 0, 0])
+        pos = pose.mul_trans(np.array([self.baseline, 0, 0]))
         return Isometry3d(pose.orientation(), pos)
 
 
