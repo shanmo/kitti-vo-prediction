@@ -4,9 +4,11 @@
 
 ## dependencies 
 
-- `conda install -c anaconda pyopengl`
-- `conda install pybind11` 
-- [pangolin](https://github.com/uoip/pangolin), need to use [this setup.py](https://github.com/shanmo/kitti-vo-prediction/issues/1)
+- OpenCV
+- [pangolin](https://github.com/uoip/pangolin)
+    - `conda install -c anaconda pyopengl`
+    - `conda install pybind11` 
+    - need to use [this setup.py](https://github.com/shanmo/kitti-vo-prediction/issues/1)
 
 ## demo 
 

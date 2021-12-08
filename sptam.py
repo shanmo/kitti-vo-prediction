@@ -1,19 +1,18 @@
 import numpy as np
-
 import time
-from itertools import chain
 from collections import defaultdict
 import transforms3d as tf 
 
 from covisibility import CovisibilityGraph
-from mapping import Mapping
 from mapping import MappingThread
 from components import Measurement
 from motion import MotionModel
+from tracking import Tracking
 
 class SPTAM(object):
     def __init__(self, params):
         self.params = params
+        self.tracker = Tracking(params)
         self.motion_model = MotionModel()
 
         self.graph = CovisibilityGraph()
@@ -70,6 +69,8 @@ class SPTAM(object):
             tracked_map.add(mappoint)
         
         self.reference = self.graph.get_reference_frame(tracked_map)
+        pose = self.tracker.refine_pose(frame.pose, frame.cam, measurements)
+        frame.update_pose(pose)
         self.motion_model.update_pose(
             frame.timestamp, frame.pose.position(), frame.pose.orientation())
 
