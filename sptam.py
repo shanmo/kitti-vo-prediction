@@ -10,9 +10,6 @@ from mapping import Mapping
 from mapping import MappingThread
 from components import Measurement
 from motion import MotionModel
-from loopclosing import LoopClosing
-
-
 
 class Tracking(object):
     def __init__(self, params):
