@@ -5,39 +5,14 @@ from itertools import chain
 from collections import defaultdict
 
 from covisibility import CovisibilityGraph
-from optimization import BundleAdjustment
 from mapping import Mapping
 from mapping import MappingThread
 from components import Measurement
 from motion import MotionModel
 
-class Tracking(object):
-    def __init__(self, params):
-        self.optimizer = BundleAdjustment()
-        self.min_measurements = params.pnp_min_measurements
-        self.max_iterations = params.pnp_max_iterations
-
-    def refine_pose(self, pose, cam, measurements):
-        assert len(measurements) >= self.min_measurements, (
-            'Not enough points')
-            
-        self.optimizer.clear()
-        self.optimizer.add_pose(0, pose, cam, fixed=False)
-
-        for i, m in enumerate(measurements):
-            self.optimizer.add_point(i, m.mappoint.position, fixed=True)
-            self.optimizer.add_edge(0, i, 0, m)
-
-        self.optimizer.optimize(self.max_iterations)
-        return self.optimizer.get_pose(0)
-
-
-
 class SPTAM(object):
     def __init__(self, params):
         self.params = params
-
-        self.tracker = Tracking(params)
         self.motion_model = MotionModel()
 
         self.graph = CovisibilityGraph()
@@ -96,10 +71,8 @@ class SPTAM(object):
         try:
             self.reference = self.graph.get_reference_frame(tracked_map)
 
-            pose = self.tracker.refine_pose(frame.pose, frame.cam, measurements)
-            frame.update_pose(pose)
             self.motion_model.update_pose(
-                frame.timestamp, pose.position(), pose.orientation())
+                frame.timestamp, frame.pose.position(), frame.pose.orientation())
             tracking_is_ok = True
         except:
             tracking_is_ok = False
