@@ -3,6 +3,7 @@ import numpy as np
 import time
 from itertools import chain
 from collections import defaultdict
+import transforms3d as tf 
 
 from covisibility import CovisibilityGraph
 from mapping import Mapping
@@ -223,7 +224,7 @@ if __name__ == '__main__':
         featurel.extract()
         t.join()
         
-        frame = StereoFrame(i, Isometry3d(), featurel, featurer, cam, timestamp=timestamp)
+        frame = StereoFrame(i, Isometry3d(tf.quaternions.qeye(), np.zeros(3)), featurel, featurer, cam, timestamp=timestamp)
 
         if not sptam.is_initialized():
             sptam.initialize(frame)

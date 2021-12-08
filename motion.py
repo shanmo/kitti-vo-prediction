@@ -6,7 +6,7 @@ class MotionModel(object):
     def __init__(self, 
             timestamp=None, 
             initial_position=np.zeros(3), 
-            initial_orientation=tf.qeye(), 
+            initial_orientation=tf.quaternions.qeye(), 
             initial_covariance=None):
 
         self.timestamp = timestamp
@@ -39,8 +39,8 @@ class MotionModel(object):
         
         dt = timestamp - self.timestamp
 
-        delta_orientation = tf.axangle2quat(self.v_angular_angle * dt * self.damp, 
-                            self.v_angular_axis)
+        delta_orientation = tf.quaternions.axangle2quat(self.v_angular_axis, 
+                self.v_angular_angle * dt * self.damp)
 
         position = self.position + self.v_linear * dt * self.damp
         orientation = self.orientation * delta_orientation
