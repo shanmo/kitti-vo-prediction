@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import g2o
 
 from threading import Lock, Thread
 from queue import Queue
@@ -11,7 +10,7 @@ from collections import defaultdict
 from covisibility import GraphKeyFrame
 from covisibility import GraphMapPoint
 from covisibility import GraphMeasurement
-
+from utils import Isometry3d
 
 
 
@@ -37,7 +36,7 @@ class Camera(object):
         
     def compute_right_camera_pose(self, pose):
         pos = pose * np.array([self.baseline, 0, 0])
-        return g2o.Isometry3d(pose.orientation(), pos)
+        return Isometry3d(pose.orientation(), pos)
 
 
 
@@ -45,7 +44,7 @@ class Frame(object):
     def __init__(self, idx, pose, feature, cam, timestamp=None, 
             pose_covariance=np.identity(6)):
         self.idx = idx
-        self.pose = pose    # g2o.Isometry3d
+        self.pose = pose    # Isometry3d
         self.feature = feature
         self.cam = cam
         self.timestamp = timestamp
@@ -81,10 +80,7 @@ class Frame(object):
 
         
     def update_pose(self, pose):
-        if isinstance(pose, g2o.SE3Quat):
-            self.pose = g2o.Isometry3d(pose.orientation(), pose.position())
-        else:
-            self.pose = pose   
+        self.pose = pose  
         self.orientation = self.pose.orientation()  
         self.position = self.pose.position()
 

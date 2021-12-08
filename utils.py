@@ -8,6 +8,12 @@ class Isometry3d(object):
         self.R = R
         self.t = t
 
+    def orientation(self): 
+        return self.R 
+
+    def position(self): 
+        return self.t 
+
     def matrix(self):
         m = np.eye(4)
         m[:3, :3] = self.R
