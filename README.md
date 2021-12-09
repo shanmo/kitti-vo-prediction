@@ -5,6 +5,8 @@
 ## dependencies 
 
 - OpenCV
+- [g2opy](https://github.com/uoip/g2opy)
+    - need to follow [this](https://github.com/uoip/g2opy/issues/38#issuecomment-595065792)
 - [pangolin](https://github.com/uoip/pangolin)
     - `conda install -c anaconda pyopengl`
     - `conda install pybind11` 
@@ -17,8 +19,8 @@
 calib.txt  image_0  image_1  image_2  image_3  times.txt
 ```
 - run `python sptam.py` 
-> Visualization 
-![demo](assets/demo.gif)
+> Visualization for odometry 04 
+![demo](assets/demo_04.gif)
 
 ## references 
 
