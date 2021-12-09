@@ -12,7 +12,7 @@
 
 ## demo 
 
-- folder structure in `KITTI odometry 06` should be 
+- folder structure in `KITTI odometry 04` should be 
 ```
 calib.txt  image_0  image_1  image_2  image_3  times.txt
 ```

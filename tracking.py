@@ -15,8 +15,7 @@ class Tracking(object):
         pose_pnp = self.pnp(cam, pose, measurements)
         return pose_pnp
 
-    @staticmethod 
-    def pnp(cam, pose, measurements): 
+    def pnp(self, cam, pose, measurements): 
         # N x 3 points in 3D 
         model_points = np.zeros((0, 3))
         # N x 2 image points 
@@ -39,11 +38,21 @@ class Tracking(object):
         raux = angle * direc
         taux = pose_inv.t 
 
+        # use initial guess 
+        # retval, rotation_vector, translation_vector, inliers = cv2.solvePnPRansac(model_points, 
+        #     image_points, camera_matrix, dist_coeffs, 
+        #     raux, taux, useExtrinsicGuess=True,
+        #     flags=cv2.SOLVEPNP_ITERATIVE)
+
+        # do not use initial guess 
         retval, rotation_vector, translation_vector, inliers = cv2.solvePnPRansac(model_points, 
-            image_points, camera_matrix, dist_coeffs, 
-            raux, taux, useExtrinsicGuess=True,
+            image_points, camera_matrix, dist_coeffs,
             flags=cv2.SOLVEPNP_ITERATIVE)
-        
+        if inliers is None or len(inliers) < 50: 
+            return pose 
+        print(f"PnP ransac inliers no.: {len(inliers)}")
+
+        rotation_vector = np.squeeze(rotation_vector)
         angle = np.linalg.norm(rotation_vector)
         dirc = rotation_vector / angle 
         q = tf.quaternions.axangle2quat(dirc, angle)

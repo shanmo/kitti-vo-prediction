@@ -180,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, help='dataset (KITTI/EuRoC)', 
         default='KITTI')
     parser.add_argument('--path', type=str, help='dataset path', 
-        default='/mnt/disk2/kitti/Kitti_all_data/odometry/dataset/sequences/06')
+        default='/mnt/disk2/kitti/Kitti_all_data/odometry/dataset/sequences/04')
     args = parser.parse_args()
 
     if args.dataset.lower() == 'kitti':
