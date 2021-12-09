@@ -99,9 +99,6 @@ class Mapping(object):
             if pt.is_bad():
                 self.graph.remove_mappoint(pt)
 
-
-
-
 class MappingThread(Mapping):
     def __init__(self, graph, params):
         super().__init__(graph, params)
