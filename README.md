@@ -21,6 +21,7 @@ calib.txt  image_0  image_1  image_2  image_3  times.txt
 - run `python sptam.py` 
 > Visualization for odometry 04 
 ![demo](assets/demo_04.gif)
+- [demo for odometry 06](https://youtu.be/RsZGw0zbKSg)
 
 ## references 
 
