@@ -8,14 +8,15 @@ from itertools import chain
 from collections import defaultdict
 
 from components import Measurement
-
-
+from optimization import LocalBA
 
 class Mapping(object):
     def __init__(self, graph, params):
         self.graph = graph
         self.params = params
         self.local_keyframes = []
+
+        self.optimizer = LocalBA()
 
     def add_keyframe(self, keyframe, measurements):
         self.graph.add_keyframe(keyframe)
@@ -30,6 +31,7 @@ class Mapping(object):
         self.fill(self.local_keyframes, keyframe)
         self.refind(self.local_keyframes, self.get_owned_points(keyframe))
 
+        self.bundle_adjust(self.local_keyframes)
         self.points_culling(self.local_keyframes)
 
     def fill(self, keyframes, keyframe):
@@ -52,6 +54,29 @@ class Mapping(object):
             self.graph.add_mappoint(mappoint)
             self.graph.add_measurement(keyframe, mappoint, measurement)
             mappoint.increase_measurement_count()
+
+    def bundle_adjust(self, keyframes):
+        adjust_keyframes = set()
+        for kf in keyframes:
+            if not kf.is_fixed():
+                adjust_keyframes.add(kf)
+
+        fixed_keyframes = set()
+        for kf in adjust_keyframes:
+            for ck, n in kf.covisibility_keyframes().items():
+                if (n > 0 and ck not in adjust_keyframes 
+                    and self.is_safe(ck) and ck < kf):
+                    fixed_keyframes.add(ck)
+
+        self.optimizer.set_data(adjust_keyframes, fixed_keyframes)
+        completed = self.optimizer.optimize(self.params.ba_max_iterations)
+
+        self.optimizer.update_poses()
+        self.optimizer.update_points()
+
+        if completed:
+            self.remove_measurements(self.optimizer.get_bad_measurements())
+        return completed
 
     def is_safe(self, keyframe):
         return True
@@ -98,6 +123,9 @@ class Mapping(object):
         for pt in mappoints:
             if pt.is_bad():
                 self.graph.remove_mappoint(pt)
+
+
+
 
 class MappingThread(Mapping):
     def __init__(self, graph, params):
@@ -174,7 +202,9 @@ class MappingThread(Mapping):
                     self.status['window_locked'] = True
 
             if requests[1] and len(self.local_keyframes) > 0:
-                self.points_culling(self.local_keyframes)
+                completed = self.bundle_adjust(self.local_keyframes)
+                if completed:
+                    self.points_culling(self.local_keyframes)
                 self.local_keyframes.clear()
 
             self.status['processing'] = False

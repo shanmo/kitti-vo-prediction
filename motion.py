@@ -1,12 +1,13 @@
 import numpy as np 
-from utils import Isometry3d
-import transforms3d as tf
+import g2o
+
+
 
 class MotionModel(object):
     def __init__(self, 
             timestamp=None, 
             initial_position=np.zeros(3), 
-            initial_orientation=tf.quaternions.qeye(), 
+            initial_orientation=g2o.Quaternion(), 
             initial_covariance=None):
 
         self.timestamp = timestamp
@@ -26,7 +27,7 @@ class MotionModel(object):
         '''
         Get the current camera pose.
         '''
-        return (Isometry3d(self.orientation, self.position), 
+        return (g2o.Isometry3d(self.orientation, self.position), 
             self.covariance)
 
     def predict_pose(self, timestamp):
@@ -34,18 +35,20 @@ class MotionModel(object):
         Predict the next camera pose.
         '''
         if not self.initialized:
-            return (Isometry3d(self.orientation, self.position), 
+            return (g2o.Isometry3d(self.orientation, self.position), 
                 self.covariance)
         
         dt = timestamp - self.timestamp
 
-        delta_orientation = tf.quaternions.axangle2quat(self.v_angular_axis, 
-                self.v_angular_angle * dt * self.damp)
+        delta_angle = g2o.AngleAxis(
+            self.v_angular_angle * dt * self.damp, 
+            self.v_angular_axis)
+        delta_orientation = g2o.Quaternion(delta_angle)
 
         position = self.position + self.v_linear * dt * self.damp
         orientation = self.orientation * delta_orientation
 
-        return (Isometry3d(orientation, position), self.covariance)
+        return (g2o.Isometry3d(orientation, position), self.covariance)
 
     def update_pose(self, timestamp, 
             new_position, new_orientation, new_covariance=None):
@@ -59,11 +62,12 @@ class MotionModel(object):
             v_linear = (new_position - self.position) / dt
             self.v_linear = v_linear
 
-            delta_q = tf.quaternions.qinverse(self.orientation) * new_orientation
+            delta_q = self.orientation.inverse() * new_orientation
+            delta_q.normalize()
 
-            vec, theta = tf.quaternions.quat2axangle(delta_q)
-            angle = theta
-            axis = vec
+            delta_angle = g2o.AngleAxis(delta_q)
+            angle = delta_angle.angle()
+            axis = delta_angle.axis()
 
             if angle > np.pi:
                 axis = axis * -1
@@ -77,3 +81,22 @@ class MotionModel(object):
         self.orientation = new_orientation
         self.covariance = new_covariance
         self.initialized = True
+
+    def apply_correction(self, correction):     # corr: g2o.Isometry3d or matrix44
+        '''
+        Reset the model given a new camera pose.
+        Note: This method will be called when it happens an abrupt change in the pose (LoopClosing)
+        '''
+        if not isinstance(correction, g2o.Isometry3d):
+            correction = g2o.Isometry3d(correction)
+
+        current = g2o.Isometry3d(self.orientation, self.position)
+        current = current * correction
+
+        self.position = current.position()
+        self.orientation = current.orientation()
+
+        self.v_linear = (
+            correction.inverse().orientation() * self.v_linear)
+        self.v_angular_axis = (
+            correction.inverse().orientation() * self.v_angular_axis)

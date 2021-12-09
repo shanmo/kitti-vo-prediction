@@ -3,11 +3,13 @@ import time
 from collections import defaultdict
 import transforms3d as tf 
 
+from components import Measurement
 from covisibility import CovisibilityGraph
 from mapping import MappingThread
-from components import Measurement
 from motion import MotionModel
 from tracking import Tracking
+
+import g2o
 
 class SPTAM(object):
     def __init__(self, params):
@@ -160,7 +162,6 @@ class SPTAM(object):
 
 if __name__ == '__main__':
     import cv2
-    from utils import Isometry3d
 
     import os
     import sys
@@ -180,7 +181,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, help='dataset (KITTI/EuRoC)', 
         default='KITTI')
     parser.add_argument('--path', type=str, help='dataset path', 
-        default='/mnt/disk2/kitti/Kitti_all_data/odometry/dataset/sequences/07')
+        default='/mnt/disk2/kitti/Kitti_all_data/odometry/dataset/sequences/06')
     args = parser.parse_args()
 
     if args.dataset.lower() == 'kitti':
@@ -220,7 +221,7 @@ if __name__ == '__main__':
         featurel.extract()
         t.join()
         
-        frame = StereoFrame(i, Isometry3d(tf.quaternions.qeye(), np.zeros(3)), featurel, featurer, cam, timestamp=timestamp)
+        frame = StereoFrame(i, g2o.Isometry3d(), featurel, featurer, cam, timestamp=timestamp)
 
         if not sptam.is_initialized():
             sptam.initialize(frame)
