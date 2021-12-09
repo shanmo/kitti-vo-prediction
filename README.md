@@ -17,6 +17,8 @@
 calib.txt  image_0  image_1  image_2  image_3  times.txt
 ```
 - run `python sptam.py` 
+> Visualization 
+![demo](assets/demo.gif)
 
 ## references 
 
