@@ -21,7 +21,7 @@ class Tracking(object):
         model_points = np.zeros((0, 3))
         # N x 2 image points 
         image_points = np.zeros((0, 2))
-        for i, m in enumerate(measurements):
+        for _, m in enumerate(measurements):
             pt3d = np.reshape(m.mappoint.position, (-1, 3))
             model_points = np.vstack((model_points, pt3d))
             pt2d = np.reshape(m.xy, (-1, 2))
@@ -39,14 +39,11 @@ class Tracking(object):
         raux = angle * direc
         taux = pose_inv.t 
 
-        (success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, 
+        retval, rotation_vector, translation_vector, inliers = cv2.solvePnPRansac(model_points, 
             image_points, camera_matrix, dist_coeffs, 
             raux, taux, useExtrinsicGuess=True,
             flags=cv2.SOLVEPNP_ITERATIVE)
         
-        if not success: 
-            return pose
-
         angle = np.linalg.norm(rotation_vector)
         dirc = rotation_vector / angle 
         q = tf.quaternions.axangle2quat(dirc, angle)
